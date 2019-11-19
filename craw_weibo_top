@@ -1,0 +1,38 @@
+# @Time    : 2019/11/19 10:56
+# @Author  : MosesPan
+# @Email   : 269258169@qq.com
+# @File    : craw_19.py
+# @Software: PyCharm
+
+from lxml import etree
+from requests import get
+import os,json
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+def crwaler_wei_bo():
+    """
+    爬取微博热榜
+    :return:
+    """
+
+    url = 'https://s.weibo.com/top/summary?cate=realtimehot'
+    response_html = get(url)
+    content_list = []
+    if response_html:
+        tree = etree.HTML(response_html.text)
+        tr_list = tree.xpath('//table/tbody/tr')[1:]
+        for tr in tr_list:
+            title = tr.xpath('./td[2]/a/text()')[0]
+            href = 'https://s.weibo.com%s' % tr.xpath('./td[2]/a/@href')[0]
+            content_list.append({'title': title, 'href': href})
+    return {'hot_name': '新浪微博', 'content': content_list}
+
+if __name__ == '__main__':
+    weibo = crwaler_wei_bo()
+    print(weibo)
+    file_path = r'{}_result.json'.format(os.path.join(BASE_DIR, 'weibo'))
+    with open(file_path, 'w', encoding='utf8') as f:
+        f.write(json.dumps(weibo, ensure_ascii=False, indent=4))
+
+    print('done')
